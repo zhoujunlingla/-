@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试服务通达情况</title>
+    <script src="assets/common.js"></script>
+    <script src="assets/jquery-3.6.1.min.js"></script>
+</head>
+<style>
+    html,body{
+        margin: 0;
+        height: 100%;
+    }
+    body{
+        display: flex;
+        background-color: rgb(211, 147, 29);
+        justify-content: center;
+        align-items: center;
+    }
+    .box {
+        display: flex;
+        text-align: center;
+        color: aliceblue;
+        font-size: 80px;
+    }
+</style>
+<body>
+    <div class="box">
+        <p>连接中</p>
+    </div>
+</body>
+<script>
+    async function test() {
+        return await $.ajax({
+            url: baseURL + `/easy/getList`,
+            method: "get",
+            error: function () {
+                $('body').css('background-color', 'brown')
+                $('.box p').html('连接失败')
+            }
+        });
+    }
+
+    $(async function() {
+        await test()
+        
+        $('body').css('background-color', 'rgb(19, 131, 9)')
+        $('.box p').html('连接成功')
+    })
+</script>
+</html>

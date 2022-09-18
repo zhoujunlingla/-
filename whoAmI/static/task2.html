@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who Am I(简单版)</title>
+    <link rel="stylesheet" href="assets/paper.css">
+    <link rel="stylesheet" href="assets/style.css">
+    <script src="assets/common.js"></script>
+    <script src="assets/jquery-3.6.1.min.js"></script>
+</head>
+<body>
+    <div class="paper main">
+        <div class="logo text-center">
+            <h1>Who Am I</h1>
+            <h3>简单版</h3>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">任务要求</h4>
+                <p class="card-text">完善代码，实现用<span class="badge secondary">Get</span>请求<span class="badge success">/easy/getList</span>接口获取完整图片列表。</p>
+                <a class="card-link" href="https://v5bruscbgs.apifox.cn/api-40160043">接口示例</a>
+            </div>
+        </div>
+    </div>
+    <div class="paper main query">
+
+    </div>
+</body>
+<script>
+    var answer = ''
+    async function getPicList() {
+        return await $.ajax({
+            url: baseURL + `/easy/getList`,
+            method: "get",
+            error: function () {
+                $('.query').html(`<div class="alert alert-danger">请检查接口${baseURL}/easy/getList启动情况</div>`)
+                return null
+            }
+        });
+    }
+
+    $(async function() {
+        let picList = await getPicList()
+        if (picList.data && picList.data.picdatas && picList.data.picdatas.length >= 4 && picList.data.picdatas[0].hasOwnProperty('filename') && picList.data.picdatas[0].hasOwnProperty('name')) {
+            picList = picList.data.picdatas
+        } else {
+            $('.query').html(`<div class="alert alert-warning">请检查接口返回格式</div>`)
+            picList = null
+        }
+        console.log(picList)
+        if (picList != null) {
+            answer_i = Math.floor(Math.random()*picList.length)
+            answer = Math.floor(Math.random()*4)
+            
+            let has_choosen = [answer_i]
+            let ques = []
+            for(let i = 0; i <4; i++) {
+                if(i == answer) {
+                    ques.push(picList[answer_i].name)
+                } else {
+                    let t = Math.floor(Math.random()*picList.length)
+                    while(has_choosen.indexOf(t) != -1) {
+                        t = Math.floor(Math.random()*picList.length)
+                    }
+                    has_choosen.push(t)
+                    ques.push(picList[t].name)
+                }
+            }
+            
+            answer = String.fromCharCode(answer+'A'.charCodeAt(0))
+            
+            $('.query').html(`
+                <div class="row query-pic">
+                    <img src="${baseURL}/static/data/${picList[answer_i].filename}" alt="question image">
+                </div>
+
+                <div class="alertbox"></div>
+
+                <button id="A" class="btn-block">A. ${ques[0]}</button>
+                <button id="B" class="btn-block">B. ${ques[1]}</button>
+                <button id="C" class="btn-block">C. ${ques[2]}</button>
+                <button id="D" class="btn-block">D. ${ques[3]}</button>            
+            `)
+
+        }
+    })
+    $(document).on("click",".btn-block",function(e){
+        console.log(answer)
+        console.log(e.target.id)
+        if (answer == e.target.id) {
+            $(`#${e.target.id}`).addClass('btn-success')
+            $('.alertbox').html(`<div class="alert alert-success">答对了<(￣︶￣)↗[GO!]</div>`)
+        } else {
+            $(`#${e.target.id}`).addClass('btn-primary')
+            $('.alertbox').html(`<div class="alert alert-danger">答错了！正确答案是${answer}</div>`)
+        }
+    });
+</script>
+</html>

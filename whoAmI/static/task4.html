@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who Am I(挑战版)</title>
+    <link rel="stylesheet" href="assets/paper.css">
+    <link rel="stylesheet" href="assets/style.css">
+    <script src="assets/common.js"></script>
+    <script src="assets/jquery-3.6.1.min.js"></script>
+</head>
+<body>
+    <div class="paper main">
+        <div class="logo text-center">
+            <h1>Who Am I</h1>
+            <h3>挑战版</h3>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">任务要求</h4>
+                <p class="card-text">完善代码，实现用<span class="badge secondary">Get</span>请求<span class="badge success">/difficult/getQuestion</span>接口获取不带答案的问答题，并实现用<span class="badge secondary">Post</span>请求<span class="badge success">/difficult/verify</span>接口验证选择是否正确</p>
+                <a class="card-link" href="https://v5bruscbgs.apifox.cn/api-40160194">接口示例</a>
+                <a class="card-link" href="https://v5bruscbgs.apifox.cn/api-40160201">接口示例</a>
+            </div>
+        </div>
+    </div>
+    <div class="paper main query">
+
+    </div>
+</body>
+<script>
+    var ques = {}
+    var queId = ""
+    async function getques() {
+        return await $.ajax({
+            url: baseURL + `/difficult/getQuestion`,
+            method: "get",
+            error: function () {
+                $('.alertbox').html(`<div class="alert alert-danger">请检查接口${baseURL}/difficult/getQuestion启动情况</div>`)
+                return null
+            }
+        });
+    }
+
+    async function verify(id, filename,chosenId, chosenText,chosenName) {
+        return await $.ajax({
+            url: baseURL + `/difficult/verify`,
+            method: "post",
+            data: {
+                "id": id,
+                "filename": filename,
+                "chosenId":chosenId,
+                "chosenText": chosenText,
+                "chosenName": chosenName
+            },
+            error: function () {
+                $('.query').html(`<div class="alert alert-danger">请检查接口${baseURL}/difficult/verify启动情况</div>`)
+                return null
+            }
+        });
+    }
+
+    $(async function() {
+        ques = await getques()
+        if (ques.data && ques.data.hasOwnProperty('filename') && ques.data.filename != "" && ques.data.hasOwnProperty('question') && ques.data.question.length == 4) {
+            $('.query').html(`
+                <div class="row query-pic">
+                    <img src="${baseURL}/static/data/${ques.data.filename}" alt="question image">
+                </div>
+
+                <div class="alertbox"></div>
+
+                <button id="A" class="btn-block">A. ${ques.data.question[0]}</button>
+                <button id="B" class="btn-block">B. ${ques.data.question[1]}</button>
+                <button id="C" class="btn-block">C. ${ques.data.question[2]}</button>
+                <button id="D" class="btn-block">D. ${ques.data.question[3]}</button>            
+            `)
+
+            ques = ques.data
+            if (ques.hasOwnProperty("id")) {
+                queId = ques.id
+            }
+        } else {
+            $('.query').html(`<div class="alert alert-warning">请检查接口返回格式</div>`)
+        }
+    })
+    $(document).on("click",".btn-block",async function(e){
+        chosenText = e.target.id
+        chosenId = chosenText.charCodeAt(0)-65
+        chosenName = ques.question[chosenId]
+        
+        stat = await verify(queId, ques.filename, chosenId, chosenText, chosenName)
+        if (stat.data.status == true) {
+            $(`#${e.target.id}`).addClass('btn-success')
+            $('.alertbox').html(`<div class="alert alert-success">答对了<(￣︶￣)↗[GO!]</div>`)
+        } else {
+            $(`#${e.target.id}`).addClass('btn-primary')
+            $('.alertbox').html(`<div class="alert alert-danger">答错了！再想想吧</div>`)
+        }
+
+    });
+</script>
+</html>
